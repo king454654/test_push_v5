@@ -32,51 +32,57 @@ Frontend Ready: CORS enabled
 Follow these steps to set up the project locally.
 
 1️⃣ Clone the Repository
+```
 git clone https://github.com/indrajitdey/DataTalk-talk-with-your-data.git
 cd DataTalk-talk-with-your-data
-
+```
 2️⃣ Create Virtual Environment
+```
 python -m venv .venv
 source .venv/bin/activate   # On Linux/Mac
 .venv\Scripts\activate      # On Windows
-
+```
 3️⃣ Install Dependencies
+```
 pip install -r requirements.txt
-
+```
 4️⃣ Configure Environment Variables
 
 Create a .env file in the project root:
-
+```
 SQL_USER=your_username
 SQL_PASSWORD=your_password
 SQL_HOST=localhost
 SQL_DATABASE=your_db_name
 API_KEY=your_api_key   # if needed
-
+```
 5️⃣ Initialize Database Schema (⚠️ First-time only)
 
 Run the following to fetch and save schema details from your database:
-
+```
 python schema.py
-
+```
 
 This step ensures the application knows your database structure before handling queries.
 
 6️⃣ Run the Application
+```
 python app.py
-
+```
 
 Server will start at:
 👉 http://127.0.0.1:5000/
 
 📡 API Endpoints
-Method	Endpoint	Description
-POST	/query	Send natural language query → SQL
-GET	/health	Check if API is running
-POST	/execute	Run SQL query on connected database
 
-(Add more here depending on your routes)
+| Method | Endpoint   | Description                         |
+| ------ | ---------- | ----------------------------------- |
+| POST   | `/query`   | Send natural language query → SQL   |
+| GET    | `/health`  | Check if API is running             |
+| POST   | `/execute` | Run SQL query on connected database |
 
+
+```
 📂 Project Structure
 ├── app.py              # Main Flask app
 ├── schema.py           # Fetch & save database schema (run first time)
@@ -84,7 +90,7 @@ POST	/execute	Run SQL query on connected database
 ├── templates/          # HTML templates (if used)
 ├── static/             # Static files (CSS, JS)
 └── .env.example        # Example environment variables
-
+```
 🤝 Contributing
 
 Contributions are welcome!
