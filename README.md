@@ -53,7 +53,16 @@ SQL_HOST=localhost
 SQL_DATABASE=your_db_name
 API_KEY=your_api_key   # if needed
 
-5️⃣ Run the Application
+5️⃣ Initialize Database Schema (⚠️ First-time only)
+
+Run the following to fetch and save schema details from your database:
+
+python schema.py
+
+
+This step ensures the application knows your database structure before handling queries.
+
+6️⃣ Run the Application
 python app.py
 
 
@@ -70,7 +79,7 @@ POST	/execute	Run SQL query on connected database
 
 📂 Project Structure
 ├── app.py              # Main Flask app
-├── schema.py           # Database schema handler
+├── schema.py           # Fetch & save database schema (run first time)
 ├── requirements.txt    # Dependencies
 ├── templates/          # HTML templates (if used)
 ├── static/             # Static files (CSS, JS)
