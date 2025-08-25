@@ -96,7 +96,7 @@ This project is licensed under the MIT License.
 
 👤 Indrajit Dey
 
-GitHub: @indrajitdey
+GitHub: [indrajitdey](https://github.com/king454654)
 
 LinkedIn: [indrajitdey01](https://www.linkedin.com/in/indrajitdey01/)
 
