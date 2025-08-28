@@ -53,8 +53,7 @@ Create a .env file in the project root:
 SQL_USER=your_username
 SQL_PASSWORD=your_password
 SQL_HOST=localhost
-SQL_DATABASE=your_db_name
-API_KEY=your_api_key   # if needed
+API_KEY=your_api_key(groq api)
 ```
 5️⃣ Initialize Database Schema (⚠️ First-time only)
 
