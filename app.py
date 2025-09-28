@@ -1,28 +1,25 @@
 from flask import Flask, request, jsonify, make_response, render_template
 from flask_cors import CORS
-import json, requests, pymysql, os, re
+import json, requests, os, re
 from decimal import Decimal
 import sqlparse
 import certifi
 from dotenv import load_dotenv
+from databricks import sql  # ✅ Databricks connector
 
 # --- CONFIGURATION ---
 load_dotenv()
 
-user = os.getenv("SQL_USER")
-password = os.getenv("SQL_PASSWORD")
-host = os.getenv("SQL_HOST")
 api_key = os.getenv("API_KEY")
 GROQ_API_KEY = api_key
 
-if not all([user, password, host, api_key]):
-    raise EnvironmentError("Missing one or more required environment variables.")
+# Databricks config
+DATABRICKS_HOSTNAME = os.getenv("DATABRICKS_HOSTNAME")
+DATABRICKS_HTTP_PATH = os.getenv("DATABRICKS_HTTP_PATH")
+DATABRICKS_TOKEN = os.getenv("DATABRICKS_TOKEN")
 
-DB_CONFIG = {
-    "host": host,
-    "user": user,
-    "password": password
-}
+if not all([api_key, DATABRICKS_HOSTNAME, DATABRICKS_HTTP_PATH, DATABRICKS_TOKEN]):
+    raise EnvironmentError("Missing one or more required environment variables.")
 
 os.environ["REQUESTS_CA_BUNDLE"] = certifi.where()
 app = Flask(__name__)
@@ -47,6 +44,18 @@ schemas = {
     } for db_schema in raw_schemas
 }
 
+# --- HELPER: Fully qualify table names ---
+def qualify_table_names(sql_text, db_name):
+    # Replace FROM table_name or JOIN table_name with FROM db_name.table_name
+    def repl(match):
+        table = match.group(2)
+        if "." in table:  # already qualified
+            return match.group(0)
+        return f"{match.group(1)} {db_name}.{table}"
+
+    sql_text = re.sub(r"\b(FROM|JOIN)\s+([a-zA-Z_][\w]*)", repl, sql_text, flags=re.IGNORECASE)
+    return sql_text
+
 # --- GENERATE SQL ---
 def generate_sql(prompt, db_schema, db_name):
     schema_info = "\n".join(
@@ -58,7 +67,14 @@ def generate_sql(prompt, db_schema, db_name):
         f"You are an expert SQL assistant. Use the following schema from database `{db_name}`:\n{schema_info}\n"
         f"If the user asks about tables or views, include both table_name and table_type.\n"
         f"The user always ask you questions about data which is inside table(all the records) so always generate a quary for a table"
+        f"When user ask any question make sure see the question and database schema and then analyse carefully after that create SQL query for find the answer of that question"
+        # f"For every user request, review the question and the database schema (tables, columns, types, keys). Determine the necessary tables, joins, filters, and aggregations, then generate a precise, optimized SQL query that returns the requested result."
+        f"If any user ask you for all the table name or view name you should genarate a query like this SHOW TABLES IN campaign_performance; or SHOW VIEWS IN campaign_performance; this is just a example"
         f"Output valid SQL only. No explanations."
+        # f"You are an expert SQL assistant. Use the following schema from database `{db_name}`:\n{schema_info}\n"
+        # f"If the user asks about tables or views, include both table_name and table_type.\n"
+        # f"The user always asks about data inside tables, so always generate a query for a table.\n"
+        # f"Output valid SQL only. No explanations."
     )
 
     payload = {
@@ -86,11 +102,13 @@ def generate_sql(prompt, db_schema, db_name):
 
         lines = sql_text.strip().splitlines()
         for i, line in enumerate(lines):
-            if line.strip().lower().startswith(("select", "show", "with", "describe", "explain")):
+            if line.strip().lower().startswith(("select", "show", "with", "describe", "explain", "use")):
                 sql_text = "\n".join(lines[i:])
                 break
 
         sql_text = sql_text.replace("'your_database_name'", f"'{db_name}'")
+
+        sql_text = qualify_table_names(sql_text, db_name)
 
         if re.search(r"(tables|views)", prompt, re.IGNORECASE) and "table_type" not in sql_text.lower():
             if "FROM information_schema.tables" in sql_text:
@@ -103,20 +121,24 @@ def generate_sql(prompt, db_schema, db_name):
     else:
         raise Exception(f"GROQ error: {res.status_code} - {res.text}")
 
-# --- DATABASE QUERY ---
-def query_mysql(sql, db_name):
-    config = DB_CONFIG.copy()
-    config["database"] = db_name
-    conn = pymysql.connect(**config)
-    cursor = conn.cursor()
+# --- DATABASE QUERY (Databricks) ---
+def query_databricks(sql_query, db_name=None):
+    connection = sql.connect(
+        server_hostname=DATABRICKS_HOSTNAME,
+        http_path=DATABRICKS_HTTP_PATH,
+        access_token=DATABRICKS_TOKEN
+    )
+    cursor = connection.cursor()
     try:
-        cursor.execute(sql)
+        if db_name:
+            cursor.execute(f"USE `{db_name}`")  # Set database explicitly
+        cursor.execute(sql_query)
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
         return rows, columns
     finally:
         cursor.close()
-        conn.close()
+        connection.close()
 
 # --- INSIGHT GENERATION ---
 def generate_insight(rows, columns, prompt):
@@ -133,6 +155,9 @@ def generate_insight(rows, columns, prompt):
             {"role": "system", "content": "You're a data analyst. Provide concise insights."},
             {"role": "user", "content": f"User question: {prompt}"},
             {"role": "user", "content": f"Data:\n{json.dumps(formatted, indent=2)}"}
+            # {"role": "system", "content": "You're a data analyst. Provide concise insights."},
+            # {"role": "user", "content": f"User question: {prompt}"},
+            # {"role": "user", "content": f"Data:\n{json.dumps(formatted, indent=2)}"}
         ]
     }
 
@@ -169,7 +194,7 @@ def analyze():
 
         db_schema = schemas[db_name]
         sql_query = generate_sql(prompt, db_schema, db_name)
-        rows, columns = query_mysql(sql_query, db_name)
+        rows, columns = query_databricks(sql_query, db_name)
         insight = generate_insight(rows, columns, prompt) if rows else "No data found for this query."
 
         return jsonify({
@@ -189,4 +214,3 @@ def test():
 
 if __name__ == "__main__":
     app.run(debug=True)
-# for run : py app.py
