@@ -46,7 +46,6 @@ schemas = {
 
 # --- HELPER: Fully qualify table names ---
 def qualify_table_names(sql_text, db_name):
-    # Replace FROM table_name or JOIN table_name with FROM db_name.table_name
     def repl(match):
         table = match.group(2)
         if "." in table:  # already qualified
@@ -68,13 +67,8 @@ def generate_sql(prompt, db_schema, db_name):
         f"If the user asks about tables or views, include both table_name and table_type.\n"
         f"The user always ask you questions about data which is inside table(all the records) so always generate a quary for a table"
         f"When user ask any question make sure see the question and database schema and then analyse carefully after that create SQL query for find the answer of that question"
-        # f"For every user request, review the question and the database schema (tables, columns, types, keys). Determine the necessary tables, joins, filters, and aggregations, then generate a precise, optimized SQL query that returns the requested result."
-        f"If any user ask you for all the table name or view name you should genarate a query like this SHOW TABLES IN campaign_performance; or SHOW VIEWS IN campaign_performance; this is just a example"
+        f"If any user ask you for all the table name or view name you should genarate a query like this SHOW TABLES IN {db_name}; or SHOW VIEWS IN {db_name};"
         f"Output valid SQL only. No explanations."
-        # f"You are an expert SQL assistant. Use the following schema from database `{db_name}`:\n{schema_info}\n"
-        # f"If the user asks about tables or views, include both table_name and table_type.\n"
-        # f"The user always asks about data inside tables, so always generate a query for a table.\n"
-        # f"Output valid SQL only. No explanations."
     )
 
     payload = {
@@ -131,7 +125,7 @@ def query_databricks(sql_query, db_name=None):
     cursor = connection.cursor()
     try:
         if db_name:
-            cursor.execute(f"USE `{db_name}`")  # Set database explicitly
+            cursor.execute(f"USE `{db_name}`")
         cursor.execute(sql_query)
         rows = cursor.fetchall()
         columns = [desc[0] for desc in cursor.description]
@@ -155,9 +149,6 @@ def generate_insight(rows, columns, prompt):
             {"role": "system", "content": "You're a data analyst. Provide concise insights."},
             {"role": "user", "content": f"User question: {prompt}"},
             {"role": "user", "content": f"Data:\n{json.dumps(formatted, indent=2)}"}
-            # {"role": "system", "content": "You're a data analyst. Provide concise insights."},
-            # {"role": "user", "content": f"User question: {prompt}"},
-            # {"role": "user", "content": f"Data:\n{json.dumps(formatted, indent=2)}"}
         ]
     }
 
@@ -212,5 +203,7 @@ def analyze():
 def test():
     return jsonify({"status": "Flask JSON working ✅"})
 
+# --- RUN LOCALLY ONLY ---
 if __name__ == "__main__":
-    app.run(debug=True)
+    if os.environ.get("STREAMLIT_RUNTIME") is None:  # ✅ Don't run Flask server in Streamlit Cloud
+        app.run(debug=True)
