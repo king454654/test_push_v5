@@ -1,74 +1,136 @@
 [
   {
-    "database": "api",
+    "database": "campaign_performance",
     "tables": [
       {
-        "name": "users",
-        "table_type": "BASE TABLE",
+        "name": "ad_performance",
+        "table_type": "TABLE",
         "columns": [
           {
-            "column_name": "id",
-            "type": "int",
+            "column_name": "ad_id",
+            "type": "string",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "name",
-            "type": "varchar(100)",
+            "column_name": "campaign_id",
+            "type": "string",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "username",
-            "type": "varchar(100)",
+            "column_name": "date",
+            "type": "date",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "email",
-            "type": "varchar(100)",
+            "column_name": "impressions",
+            "type": "bigint",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "address",
-            "type": "varchar(100)",
+            "column_name": "clicks",
+            "type": "bigint",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "phone",
-            "type": "varchar(100)",
+            "column_name": "spend",
+            "type": "double",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "website",
-            "type": "varchar(100)",
+            "column_name": "conversions",
+            "type": "bigint",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
+          }
+        ]
+      },
+      {
+        "name": "audience",
+        "table_type": "TABLE",
+        "columns": [
+          {
+            "column_name": "audience_id",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
           },
           {
-            "column_name": "company",
-            "type": "varchar(100)",
+            "column_name": "campaign_id",
+            "type": "string",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
+          },
+          {
+            "column_name": "age_group",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "gender",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "location",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "size",
+            "type": "bigint",
+            "nullable": true,
+            "comment": ""
+          }
+        ]
+      },
+      {
+        "name": "campaigns",
+        "table_type": "TABLE",
+        "columns": [
+          {
+            "column_name": "campaign_id",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "campaign_name",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "start_date",
+            "type": "date",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "end_date",
+            "type": "date",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "budget",
+            "type": "double",
+            "nullable": true,
+            "comment": ""
+          },
+          {
+            "column_name": "status",
+            "type": "string",
+            "nullable": true,
+            "comment": ""
           }
         ]
       }
@@ -76,121 +138,34 @@
     "views": []
   },
   {
-    "database": "campaignperformance",
+    "database": "test",
     "tables": [
       {
-        "name": "campaigns",
-        "table_type": "BASE TABLE",
+        "name": "table1",
+        "table_type": "TABLE",
+        "columns": []
+      },
+      {
+        "name": "table2",
+        "table_type": "TABLE",
         "columns": [
           {
-            "column_name": "campaign_id",
+            "column_name": "id",
             "type": "int",
-            "nullable": false,
-            "key": "PRI",
-            "default": null,
-            "extra": "auto_increment"
+            "nullable": true,
+            "comment": ""
           },
           {
             "column_name": "name",
-            "type": "varchar(255)",
-            "nullable": false,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "start_date",
-            "type": "date",
-            "nullable": false,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "end_date",
-            "type": "date",
-            "nullable": false,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "budget",
-            "type": "decimal(12,2)",
-            "nullable": false,
-            "key": "",
-            "default": null,
-            "extra": ""
-          }
-        ]
-      },
-      {
-        "name": "performance_metrics",
-        "table_type": "BASE TABLE",
-        "columns": [
-          {
-            "column_name": "metric_id",
-            "type": "int",
-            "nullable": false,
-            "key": "PRI",
-            "default": null,
-            "extra": "auto_increment"
-          },
-          {
-            "column_name": "campaign_id",
-            "type": "int",
-            "nullable": false,
-            "key": "MUL",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "impressions",
-            "type": "int",
+            "type": "string",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           },
           {
-            "column_name": "clicks",
-            "type": "int",
+            "column_name": "value",
+            "type": "double",
             "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "conversions",
-            "type": "int",
-            "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "cost",
-            "type": "decimal(12,2)",
-            "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "revenue",
-            "type": "decimal(12,2)",
-            "nullable": true,
-            "key": "",
-            "default": null,
-            "extra": ""
-          },
-          {
-            "column_name": "date",
-            "type": "date",
-            "nullable": false,
-            "key": "",
-            "default": null,
-            "extra": ""
+            "comment": ""
           }
         ]
       }
